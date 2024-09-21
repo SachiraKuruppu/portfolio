@@ -1,5 +1,4 @@
 use leptos::*;
-use std::sync::Arc;
 
 #[component]
 fn TabTitle(title: String, selected: bool, on_click: impl Fn() + 'static) -> impl IntoView {
@@ -21,20 +20,16 @@ fn TabTitle(title: String, selected: bool, on_click: impl Fn() + 'static) -> imp
 }
 
 #[component]
-pub fn TabBar(titles: Vec<String>, selected_tab_id: usize, on_tab_select: Arc<dyn Fn(i32)>) -> impl IntoView {
+pub fn TabBar(titles: Vec<String>, selected_tab_id: usize, on_tab_select: Callback<usize>) -> impl IntoView {
     view! {
         <div class="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
             <ul class="flex flex-wrap -mb-px">
                 {
                     titles.iter().enumerate().map(|(index, title)| {
                         let selected = index == selected_tab_id;
-                        let on_click =  {
-                            let on_tab_select = Arc::clone(&on_tab_select);
-                            move || on_tab_select(index as i32)
-                        };
 
                         view! {
-                            <TabTitle title={title.clone()} selected={selected} on_click={on_click} />
+                            <TabTitle title={title.clone()} selected={selected} on_click={move || on_tab_select.call(index)} />
                         }
                     }).collect::<Vec<_>>()
                 }
