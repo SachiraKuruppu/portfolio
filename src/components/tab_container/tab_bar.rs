@@ -20,19 +20,21 @@ fn TabTitle(title: String, selected: bool, on_click: impl Fn() + 'static) -> imp
 }
 
 #[component]
-pub fn TabBar(titles: Vec<String>, selected_tab_id: usize, on_tab_select: Callback<usize>) -> impl IntoView {
+pub fn TabBar(titles: Vec<String>, read_selected_tab_id: ReadSignal<usize>, on_tab_select: Callback<usize>) -> impl IntoView {
+    let memoized_tabs = create_memo(move |_| {
+        titles.iter().enumerate().map(|(index, title)| {
+            let selected = index == read_selected_tab_id.get();
+
+            view! {
+                <TabTitle title={title.clone()} selected={selected} on_click={move || on_tab_select.call(index)} />
+            }
+        }).collect::<Vec<_>>()
+    });
+
     view! {
         <div class="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
             <ul class="flex flex-wrap -mb-px">
-                {
-                    titles.iter().enumerate().map(|(index, title)| {
-                        let selected = index == selected_tab_id;
-
-                        view! {
-                            <TabTitle title={title.clone()} selected={selected} on_click={move || on_tab_select.call(index)} />
-                        }
-                    }).collect::<Vec<_>>()
-                }
+                {move || memoized_tabs.get()}
             </ul>
         </div>
     }
